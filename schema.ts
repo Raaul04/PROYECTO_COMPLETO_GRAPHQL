@@ -17,7 +17,8 @@ export const schema = `#graphql
 
     type Mutation{
         addAirport(iata:String!,name:String!,ciudad:String!,pais:String!):Aeropuerto!
-        updateAirport
+        updateAirport(id:ID!, name:String, ciudad:String, pais:String!):Aeropuerto!
+        deleteAirport(id:ID!):Boolean!
 
     }
 

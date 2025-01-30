@@ -1,6 +1,6 @@
 import { ApolloServer } from "@apollo/server";
 import { schema } from "./schema.ts";
-import {  } from "./types.ts";
+import { AeropuertoModel} from "./types.ts";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import { resolvers } from "./resolvers.ts";
 import { MongoClient } from "mongodb";
@@ -17,9 +17,9 @@ await mongoClient.connect();
 console.info("Connected to MongoDB");
 
 
-const mongoDB = mongoClient.db("BASE_TAREAS");
+const mongoDB = mongoClient.db("Bases_D");
 
-//const XCollection = mongoDB.collection<modelo>("nombredeCollecion");
+const AeropuertoCollecion = mongoDB.collection<AeropuertoModel>("AEROPUERTOS");
 
 const server = new ApolloServer({
   typeDefs: schema,
@@ -27,7 +27,7 @@ const server = new ApolloServer({
 });
 
 const { url } = await startStandaloneServer(server, {
-  context: async () => ({ /*Collecion */ }),
+  context: async () => ({ AeropuertoCollecion }),
 });
 
 console.info(`Server ready at ${url}`);
