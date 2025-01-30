@@ -1,4 +1,4 @@
-import { AeropuertoModel,API_AIRPORT,API_TIME } from "./types.ts"
+import { AeropuertoModel,API_AIRPORT } from "./types.ts"
 import { GraphQLError } from "graphql";
 import { ObjectId,Collection } from "mongodb";
 type Contexto={
