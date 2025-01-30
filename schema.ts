@@ -1,8 +1,7 @@
-
-export const schema=`#graphql
+export const schema = `#graphql
 
     type Query{
-        default():String!
+        default : String!
     }
 
 `;
