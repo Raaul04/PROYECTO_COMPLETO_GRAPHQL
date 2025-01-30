@@ -10,13 +10,14 @@ export const schema = `#graphql
         timezone:String!,
         hora:String!,
     }
-    type Query:{
+    type Query{
         getAirport(id:ID!):Aeropuerto
         getAirports:[Aeropuerto]!
     },
 
     type Mutation{
         addAirport(iata:String!,name:String!,ciudad:String!,pais:String!):Aeropuerto!
+        updateAirport
 
     }
 

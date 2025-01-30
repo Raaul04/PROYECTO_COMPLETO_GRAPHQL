@@ -3,7 +3,7 @@ import { schema } from "./schema.ts";
 import {  } from "./types.ts";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import { resolvers } from "./resolvers.ts";
-/*import { MongoClient } from "mongodb";
+import { MongoClient } from "mongodb";
 
 
 const MONGO_URL = Deno.env.get("MONGO_URL");
@@ -20,7 +20,7 @@ console.info("Connected to MongoDB");
 const mongoDB = mongoClient.db("BASE_TAREAS");
 
 //const XCollection = mongoDB.collection<modelo>("nombredeCollecion");
-*/
+
 const server = new ApolloServer({
   typeDefs: schema,
   resolvers,

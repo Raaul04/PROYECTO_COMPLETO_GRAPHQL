@@ -6,9 +6,8 @@ import { ObjectId,Collection } from "mongodb";
 export const resolvers = {
 
     Query: {
-        default : ():string =>{
-            return "Hola Mundo"
-        },
+            
+      
     },
 
 }
