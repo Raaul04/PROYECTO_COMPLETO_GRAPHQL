@@ -8,7 +8,7 @@ export const schema = `#graphql
         latitude:Float!,
         longitude:Float!,
         timezone:String!,
-        hora:String!,
+        horaActual:String!,
     }
     type Query{
         getAirport(id:ID!):Aeropuerto
