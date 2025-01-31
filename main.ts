@@ -21,6 +21,7 @@ const mongoDB = mongoClient.db("Bases_D");
 
 const AeropuertoCollecion = mongoDB.collection<AeropuertoModel>("AEROPUERTOS");
 
+
 const server = new ApolloServer({
   typeDefs: schema,
   resolvers,
