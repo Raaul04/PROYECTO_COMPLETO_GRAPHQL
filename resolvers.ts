@@ -13,6 +13,9 @@ type ArgsAddAirport={
     ciudad:string,
     pais:string
 }
+type ArgsDelete={
+    id:string
+}
 
 export const resolvers = {
 
@@ -24,7 +27,7 @@ export const resolvers = {
          //Resolver encadenado para obtener zona horaria
          horaActual:async(parent:any)=>{
             const api=Deno.env.get("API_KEY")
-            const url=`https://api.api-ninjas.com/v1/timezone?latitude=${parent.latitude} &lon= ${parent.longitude}`
+            const url = `https://api.api-ninjas.com/v1/timezone?lat=${parent.latitude}&lon=${parent.longitude}`;
             const timeresponse= await fetch(url,{
                 headers: {
                     'X-Api-Key': api
@@ -47,39 +50,44 @@ export const resolvers = {
     },
     Mutation:{
         addAirport:async(_:unknown,args:ArgsAddAirport,ctx:Contexto):Promise<AeropuertoModel>=>{
-            const api=Deno.env.get("API_KEY")
-            if(!api){
-                throw new GraphQLError("No va a la Api")
+            const api = Deno.env.get("API_KEY");
+            if (!api) {
+                throw new GraphQLError("No va a la API");
             }
-            const {name}=args
-            const nameExists= await ctx.AeropuertoCollecion.findOne({name})
-            if(nameExists){
-                throw new GraphQLError("El nombre ya esta en la base de datos")
-            }
-
-            // Llamar a la API de Ninja para obtener los datos del aeropuerto
-            const url=`https://api.api-ninjas.com/v1/airports?name=${name}`
-            const data= await fetch(url,{
+    
+            const url = `https://api.api-ninjas.com/v1/airports?name=${args.name}`;
+            const data = await fetch(url, {
                 headers: {
                     'X-Api-Key': api
-                  },
-            })
-            if(data.status!==200){throw new GraphQLError("Error de peticion")}
-            
-            const response:API_AIRPORT[]=await data.json()
-            if(response.length===0){
-                throw new GraphQLError("No se ha encontardo ningun aeropuerto con ese nombre")
+                },
+            });
+            console.log("Respuesta de la API:", data);  // Verificar si la respuesta es correcta
+    
+            if (data.status !== 200) {
+                console.error("Error en la API, status:", data.status);
+                throw new GraphQLError("Error de petición");
             }
-            const airport=response[0]//Extraemos el primer aeropuerto del array
+    
+            const response: API_AIRPORT[] = await data.json();
+            console.log("Datos obtenidos de la API:", response);  // Verificar los datos recibidos
+    
+            if (!response || response.length === 0) {
+                throw new GraphQLError("No se ha encontrado ningún aeropuerto con ese nombre");
+            }
+    
+            const airport = response[0];  // Extraer el primer aeropuerto
+            console.log("Aeropuerto encontrado:", airport);  // Imprimir el aeropuerto encontrado
 
 
 
-            const timezoneUrl=`https://api.api-ninjas.com/v1/timezone?latitude=${airport.latitude} &lon= ${airport.longitude}`
+            const timezoneUrl=`https://api.api-ninjas.com/v1/timezone?lat=${airport.latitude}&lon=${airport.longitude}`
             const dataTimezone= await fetch(timezoneUrl,{
                 headers: {
                     'X-Api-Key': api
                   },
             })
+            //console.log(dataTimezone)
+       
             if(dataTimezone.status!==200){throw new GraphQLError("Error de peticion de Timezone")}
 
             const timeData:API_TIME= await dataTimezone.json()
@@ -92,16 +100,23 @@ export const resolvers = {
                 latitude: airport.latitude,
                 longitude: airport.longitude,
                 timezone: timeData.timezone
+
             }
-            
+
             //Insertar en el MongoDB
             const resultado= await ctx.AeropuertoCollecion.insertOne(newAirport)
             if(!resultado){
                 throw new GraphQLError("Error en la inserccion en la base de datos")
             }
+            
 
             return newAirport
 
+        },
+        deleteAirport:async(_:unknown,args:ArgsDelete,ctx:Contexto):Promise<boolean>=>{
+            const {deletedCount}= await ctx.AeropuertoCollecion.deleteOne({_id:new ObjectId(args.id)})
+            console.log(deletedCount)
+            return deletedCount===1;
         }
 
     }
