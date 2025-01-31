@@ -5,8 +5,8 @@ export const schema = `#graphql
         name:String!,
         ciudad:String!,
         pais:String!,
-        latitude:String!,
-        longitude:String!,
+        latitude:Float!,
+        longitude:FLoat!,
         timezone:String!,
         hora:String!,
     }

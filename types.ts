@@ -7,7 +7,7 @@ export type AeropuertoModel=OptionalId<{
     pais:string,
     latitude:number,
     longitude:number,
-    timezone:string,
+    timezone: string; // Puede ser opcional, porque lo obtenemos después
 }>
 
 //https://api.api-ninjas.com/v1/airports
@@ -17,5 +17,6 @@ export type API_AIRPORT={
 }
 //https://api.api-ninjas.com/v1/timezone
 export type API_TIME={
-    hora:string
+    timezone:string,
+    datetime: string;   // Hora y fecha actual en formato ISO (Ej: "2025-01-30T12:00:00Z")
 }
