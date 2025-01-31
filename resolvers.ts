@@ -1,3 +1,4 @@
+import { time } from "node:console";
 import { AeropuertoModel,API_AIRPORT,API_TIME } from "./types.ts"
 import { GraphQLError } from "graphql";
 import { ObjectId,Collection } from "mongodb";
@@ -12,6 +13,13 @@ type ArgsAddAirport={
     name:string,
     ciudad:string,
     pais:string
+}
+type ArgsUpdateAirport={
+    id:string,
+    name?:string,
+    pais?:string,
+    ciudad?:string,
+
 }
 type ArgsDelete={
     id:string
@@ -115,8 +123,82 @@ export const resolvers = {
         },
         deleteAirport:async(_:unknown,args:ArgsDelete,ctx:Contexto):Promise<boolean>=>{
             const {deletedCount}= await ctx.AeropuertoCollecion.deleteOne({_id:new ObjectId(args.id)})
-            console.log(deletedCount)
+            //console.log(deletedCount)
             return deletedCount===1;
+        },
+
+        updateAirport:async(_:unknown,args:ArgsUpdateAirport,ctx:Contexto):Promise<AeropuertoModel>=>{
+            const api=Deno.env.get("API_KEY")
+            if(!api){
+                throw new GraphQLError("No se encuentra la Api")
+            }
+            const{id,name,ciudad,pais}=args
+            if(!name && !ciudad && !pais ){
+                throw new GraphQLError("Al menos un valor se tiene que actualizar")
+             }
+             const existingAirport= await ctx.AeropuertoCollecion.findOne({_id:new ObjectId(id)})
+             if(!existingAirport){throw new GraphQLError("El aeropuerto no existe en la base de datos")}
+
+            // Si no se actualiza la ciudad ni el país, solo cambiamos el nombre
+             if(!ciudad && !pais){
+                const UpdatedAirport= await ctx.AeropuertoCollecion.findOneAndUpdate({
+                    _id:new ObjectId(id)
+                },
+                {
+                    $set:{name}
+
+                });
+                if(!UpdatedAirport){
+                    throw new GraphQLError("Error al actualizar el Aeropuerto")
+                }
+                return UpdatedAirport
+
+             }
+
+
+            const url=`https://api.api-ninjas.com/v1/airports?name=${name||existingAirport.name}`
+            const airportData=await fetch(url,{
+                headers: {
+                    'X-Api-Key': 'nyNihb/AhHFDFFdAk3RFiQ==KJaDgoIF9Y5rCoEo'
+                  },
+            })
+            if(airportData.status!==200){throw new GraphQLError("Error en la Api")}
+
+            const response:API_AIRPORT[]= await airportData.json()
+            console.log(response)
+            if(response.length===0){throw new GraphQLError("No se encontró información del aeropuerto")}
+            const newAirport=response[0]
+
+
+            // Obtener nueva zona horaria
+            const timezoneUrl=`https://api.api-ninjas.com/v1/timezone?lat=${newAirport.latitude}&lon=${newAirport.longitude}`
+            const timzoneData= await fetch(timezoneUrl,{
+                headers: {
+                    'X-Api-Key': 'nyNihb/AhHFDFFdAk3RFiQ==KJaDgoIF9Y5rCoEo'
+                  },
+            })
+            if (timzoneData.status !== 200) throw new GraphQLError("Error en la API de Timezone");
+            //✅ Convierte la respuesta JSON en un objeto TypeScript.
+            const timezoneResponse:API_TIME= await timzoneData.json()
+
+            const updatedAirport= await ctx.AeropuertoCollecion.findOneAndUpdate({
+                _id:new ObjectId(id)
+
+            },
+            {
+                $set:{
+                    name:existingAirport.name||name,
+                    pais:existingAirport.pais||pais,
+                    ciudad:existingAirport.ciudad||ciudad,
+                    latitude:newAirport.latitude,
+                    longitude:newAirport.longitude,
+                    timezone:timezoneResponse.timezone
+                }
+            }
+        );
+        console.log(updatedAirport)
+        if(!updatedAirport){throw new GraphQLError("No se pudo Actualizar")}
+        return updatedAirport
         }
 
     }
